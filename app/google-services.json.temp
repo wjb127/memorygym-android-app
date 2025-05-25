@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "123456789",
+    "project_id": "memorygym-temp",
+    "storage_bucket": "memorygym-temp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789:android:abcdef123456789",
+        "android_client_info": {
+          "package_name": "com.memorygym.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "123456789-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.memorygym.app",
+            "certificate_hash": "abcdefghijklmnopqrstuvwxyz"
+          }
+        },
+        {
+          "client_id": "123456789-zyxwvutsrqponmlkjihgfedcba.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDummyKeyForTesting123456789"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "123456789-zyxwvutsrqponmlkjihgfedcba.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+} 
