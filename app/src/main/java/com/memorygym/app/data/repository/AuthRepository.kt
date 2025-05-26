@@ -8,4 +8,5 @@ interface AuthRepository {
     fun isUserSignedIn(): Boolean
     suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser>
     suspend fun signOut()
+    suspend fun createOrUpdateUserProfile(firebaseUser: FirebaseUser): Result<Unit>
 } 

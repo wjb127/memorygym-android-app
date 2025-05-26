@@ -1,0 +1,18 @@
+{
+  "name": "memorygym-firestore-setup",
+  "version": "1.0.0",
+  "description": "MemoryGym Firestore 초기 데이터 설정",
+  "main": "setup-firestore.js",
+  "scripts": {
+    "setup": "node setup-firestore.js",
+    "deploy-rules": "firebase deploy --only firestore:rules",
+    "create-sample": "node create-sample-data.js",
+    "create-sample-with-id": "node create-sample-data.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  }
+} 

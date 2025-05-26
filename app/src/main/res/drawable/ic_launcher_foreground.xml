@@ -1,0 +1,91 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- 오렌지 배경 원 -->
+    <path
+        android:fillColor="#FFB366"
+        android:pathData="M54,54m-45,0a45,45 0,1 1,90 0a45,45 0,1 1,-90 0" />
+    
+    <!-- 두뇌 본체 -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="2.5"
+        android:pathData="M54,35 C42,35 35,42 35,52 C35,58 37,63 40,67 C42,70 45,72 48,73 C50,74 52,74 54,74 C56,74 58,74 60,73 C63,72 66,70 68,67 C71,63 73,58 73,52 C73,42 66,35 54,35 Z" />
+    
+    <!-- 두뇌 주름 -->
+    <path
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="1.5"
+        android:pathData="M42,45 C44,47 46,48 48,49 M50,42 C52,44 54,45 56,46 M58,48 C60,50 62,51 64,52 M40,55 C42,57 44,58 46,59 M52,56 C54,58 56,59 58,60 M60,62 C62,64 64,65 66,66" />
+    
+    <!-- 중앙 분리선 -->
+    <path
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="2"
+        android:pathData="M54,38 L54,70" />
+    
+    <!-- 왼쪽 덤벨 -->
+    <group android:translateX="-8" android:translateY="0">
+        <!-- 덤벨 바 -->
+        <path
+            android:fillColor="#2C3E50"
+            android:pathData="M25,52 L35,52 C36,52 37,53 37,54 C37,55 36,56 35,56 L25,56 C24,56 23,55 23,54 C23,53 24,52 25,52 Z" />
+        <!-- 왼쪽 무게 -->
+        <path
+            android:fillColor="#34495E"
+            android:pathData="M20,48 L25,48 C26,48 27,49 27,50 L27,58 C27,59 26,60 25,60 L20,60 C19,60 18,59 18,58 L18,50 C18,49 19,48 20,48 Z" />
+        <!-- 오른쪽 무게 -->
+        <path
+            android:fillColor="#34495E"
+            android:pathData="M35,48 L40,48 C41,48 42,49 42,50 L42,58 C42,59 41,60 40,60 L35,60 C34,60 33,59 33,58 L33,50 C33,49 34,48 35,48 Z" />
+    </group>
+    
+    <!-- 오른쪽 덤벨 -->
+    <group android:translateX="8" android:translateY="0">
+        <!-- 덤벨 바 -->
+        <path
+            android:fillColor="#2C3E50"
+            android:pathData="M73,52 L83,52 C84,52 85,53 85,54 C85,55 84,56 83,56 L73,56 C72,56 71,55 71,54 C71,53 72,52 73,52 Z" />
+        <!-- 왼쪽 무게 -->
+        <path
+            android:fillColor="#34495E"
+            android:pathData="M68,48 L73,48 C74,48 75,49 75,50 L75,58 C75,59 74,60 73,60 L68,60 C67,60 66,59 66,58 L66,50 C66,49 67,48 68,48 Z" />
+        <!-- 오른쪽 무게 -->
+        <path
+            android:fillColor="#34495E"
+            android:pathData="M83,48 L88,48 C89,48 90,49 90,50 L90,58 C90,59 89,60 88,60 L83,60 C82,60 81,59 81,58 L81,50 C81,49 82,48 83,48 Z" />
+    </group>
+    
+    <!-- 두뇌 팔 (왼쪽) -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="2"
+        android:pathData="M40,54 C38,54 36,54 34,54 C32,54 30,54 28,54" />
+    
+    <!-- 두뇌 팔 (오른쪽) -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="2"
+        android:pathData="M68,54 C70,54 72,54 74,54 C76,54 78,54 80,54" />
+    
+    <!-- 두뇌 다리 -->
+    <path
+        android:fillColor="#FF6B6B"
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="2"
+        android:pathData="M48,74 C48,76 48,78 48,80 M60,74 C60,76 60,78 60,80" />
+    
+    <!-- 파워업 효과선 -->
+    <path
+        android:strokeColor="#2C3E50"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M50,25 L52,30 M54,22 L56,27 M58,25 L60,30" />
+    
+</vector> 

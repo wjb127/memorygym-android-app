@@ -93,3 +93,4 @@ GoogleService-Info.plist
 
 # Secrets
 secrets.properties 
+node_modules

@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 사용자는 자신의 데이터만 접근 가능
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 과목 데이터
+    match /subjects/{subjectId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // 플래시카드 데이터
+    match /flashcards/{cardId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // 학습 세션
+    match /studySessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // 복습 간격 (모든 사용자 읽기 가능)
+    match /reviewIntervals/{intervalId} {
+      allow read: if request.auth != null;
+      allow write: if false; // 관리자만 수정 가능
+    }
+    
+    // 피드백
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null;
+      allow read: if false; // 관리자만 읽기 가능
+    }
+  }
+} 
