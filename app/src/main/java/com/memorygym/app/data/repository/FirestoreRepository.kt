@@ -41,4 +41,8 @@ interface FirestoreRepository {
     
     // Feedback operations
     suspend fun createFeedback(feedback: Feedback): String
+    
+    // Initial data operations
+    suspend fun createInitialDataForUser(userId: String): Result<Unit>
+    suspend fun hasInitialData(userId: String): Result<Boolean>
 } 

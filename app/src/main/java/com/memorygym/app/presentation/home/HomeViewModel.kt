@@ -74,6 +74,29 @@ class HomeViewModel @Inject constructor(
                     currentUser = user,
                     isSignedOut = user == null
                 )
+                
+                // 로그인한 사용자에게 초기 데이터 체크 및 생성
+                user?.let { firebaseUser ->
+                    checkAndCreateInitialData(firebaseUser.uid)
+                }
+            }
+        }
+    }
+
+    private fun checkAndCreateInitialData(userId: String) {
+        viewModelScope.launch {
+            try {
+                val hasInitialData = firestoreRepository.hasInitialData(userId)
+                if (hasInitialData.isSuccess && !hasInitialData.getOrThrow()) {
+                    val result = firestoreRepository.createInitialDataForUser(userId)
+                    if (result.isSuccess) {
+                        _uiState.value = _uiState.value.copy(
+                            successMessage = "중급 영단어 과목과 50개 퀴즈가 자동으로 생성되었습니다!"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                // 초기 데이터 생성 실패는 조용히 처리 (사용자 경험에 영향 없음)
             }
         }
     }
@@ -132,6 +155,40 @@ class HomeViewModel @Inject constructor(
 
     fun clearSuccessMessage() {
         _uiState.value = _uiState.value.copy(successMessage = null)
+    }
+
+    fun createInitialDataForCurrentUser() {
+        viewModelScope.launch {
+            authRepository.currentUser.first()?.let { currentUser ->
+                _uiState.value = _uiState.value.copy(isLoading = true)
+                
+                try {
+                    val result = firestoreRepository.createInitialDataForUser(currentUser.uid)
+                    
+                    result.fold(
+                        onSuccess = {
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                successMessage = "중급 영단어 과목과 50개 퀴즈가 생성되었습니다!"
+                            )
+                        },
+                        onFailure = { error ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                errorMessage = "초기 데이터 생성 실패: ${error.message}"
+                            )
+                        }
+                    )
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "초기 데이터 생성 실패: ${e.message}"
+                    )
+                }
+            } ?: run {
+                _uiState.value = _uiState.value.copy(errorMessage = "로그인이 필요합니다.")
+            }
+        }
     }
 
     fun addQuiz(subjectId: String, question: String, answer: String) {

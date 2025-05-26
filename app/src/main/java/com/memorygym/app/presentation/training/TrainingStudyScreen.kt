@@ -39,9 +39,24 @@ fun TrainingStudyScreen(
     val uiState by viewModel.uiState.collectAsState()
     var userAnswer by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+    var autoNextTimer by remember { mutableStateOf(5) }
 
     LaunchedEffect(subjectId, trainingLevel) {
         viewModel.loadCardsForTraining(subjectId, trainingLevel)
+    }
+
+    // 정답 확인 후 5초 타이머
+    LaunchedEffect(uiState.answerState) {
+        if (uiState.answerState == AnswerState.CORRECT || uiState.answerState == AnswerState.INCORRECT) {
+            autoNextTimer = 5
+            while (autoNextTimer > 0) {
+                kotlinx.coroutines.delay(1000)
+                autoNextTimer--
+            }
+            // 5초 후 자동으로 다음 카드로 이동
+            userAnswer = ""
+            viewModel.nextCard()
+        }
     }
 
     // 학습 완료 시 결과 화면으로 이동
@@ -334,11 +349,9 @@ fun TrainingStudyScreen(
                                     Button(
                                         onClick = {
                                             keyboardController?.hide()
-                                            if (userAnswer.isNotBlank()) {
-                                                viewModel.checkAnswer(userAnswer.trim())
-                                            }
+                                            // 빈 답안도 허용 (모르는 경우 바로 오답 처리)
+                                            viewModel.checkAnswer(userAnswer.trim())
                                         },
-                                        enabled = userAnswer.isNotBlank(),
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = ButtonDefaults.buttonColors(containerColor = AccentPink),
                                         shape = RoundedCornerShape(12.dp)
@@ -346,7 +359,7 @@ fun TrainingStudyScreen(
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text("다음으로 넘어가기", color = Color.White, fontSize = 16.sp)
+                                            Text("정답 확인", color = Color.White, fontSize = 16.sp)
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text("Enter ↵", color = Color.White, fontSize = 14.sp)
                                         }
@@ -368,7 +381,9 @@ fun TrainingStudyScreen(
                                             Text("🧠", fontSize = 16.sp)
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = if (uiState.currentIndex < uiState.totalCards) "정답 확인" else "학습 완료",
+                                                text = if (uiState.currentIndex < uiState.totalCards) {
+                                                    if (autoNextTimer > 0) "다음으로 넘어가기 (${autoNextTimer}초)" else "다음으로 넘어가기"
+                                                } else "학습 완료",
                                                 color = Color.White,
                                                 fontSize = 16.sp
                                             )
@@ -408,20 +423,40 @@ fun TrainingStudyScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
                     ) {
+                        Text("📚", fontSize = 48.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "학습할 카드가 없습니다",
+                            text = "${trainingLevel}단계 훈련소가 비어있습니다",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TextGray
+                            color = TextGray,
+                            textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "다른 훈련소를 선택해보세요",
+                            text = "다른 훈련소를 선택하거나\n퀴즈를 추가해보세요",
                             fontSize = 14.sp,
-                            color = TextGray.copy(alpha = 0.7f)
+                            color = TextGray.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center,
+                            lineHeight = 20.sp
                         )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        OutlinedButton(
+                            onClick = { navController.popBackStack() },
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, AccentPink)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("←", fontSize = 16.sp)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("훈련소 선택으로 돌아가기", color = AccentPink, fontSize = 14.sp)
+                            }
+                        }
                     }
                 }
             }

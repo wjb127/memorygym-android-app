@@ -67,6 +67,12 @@ class AuthRepositoryImpl @Inject constructor(
                     avatarUrl = firebaseUser.photoUrl?.toString()
                 )
                 firestoreRepository.updateUser(updatedUser)
+                
+                // 기존 사용자도 초기 데이터가 없으면 생성
+                val hasInitialData = firestoreRepository.hasInitialData(userId)
+                if (hasInitialData.isSuccess && !hasInitialData.getOrThrow()) {
+                    firestoreRepository.createInitialDataForUser(userId)
+                }
             } else {
                 // 새로운 사용자 - 프로필 생성
                 val newUser = User(
@@ -81,6 +87,9 @@ class AuthRepositoryImpl @Inject constructor(
                     premiumUntil = null
                 )
                 firestoreRepository.createUser(newUser)
+                
+                // 새로운 사용자에게 초기 데이터 생성
+                firestoreRepository.createInitialDataForUser(userId)
             }
             
             Result.success(Unit)

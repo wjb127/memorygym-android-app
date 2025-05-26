@@ -93,31 +93,6 @@ fun TrainingCenterScreen(
                     color = TextGray
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // 체험 모드 안내
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(LightSkyBlue)
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Lightbulb,
-                        contentDescription = "체험 모드",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "체험 모드: 샘플 과목으로 학습을 체험해보세요! (수정/삭제 불가)",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // 선택된 과목 표시

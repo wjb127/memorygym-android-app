@@ -70,7 +70,7 @@ class TrainingStudyViewModel @Inject constructor(
                             currentIndex = 0,
                             totalCards = 0,
                             isLoading = false,
-                            errorMessage = "${trainingLevel}단계 훈련소에 학습할 카드가 없습니다."
+                            errorMessage = null
                         )
                     }
                 }

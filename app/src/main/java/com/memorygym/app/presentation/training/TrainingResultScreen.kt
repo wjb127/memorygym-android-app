@@ -64,37 +64,6 @@ fun TrainingResultScreen(
                 modifier = Modifier.padding(vertical = 16.dp)
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // 체험 모드 안내
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = LightSkyBlue),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Lightbulb,
-                        contentDescription = "체험 모드",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        "체험 모드로 훈련하고 계시네요!\n로그인하시면 학습 진도가 저장되고, 나만의 카드를\n추가할 수 있습니다.",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-            
             Spacer(modifier = Modifier.height(32.dp))
             
             // 트레이닝 결과
@@ -227,20 +196,22 @@ fun TrainingResultScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                border = BorderStroke(1.dp, Color(0xFFE0E0E0))
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("✨", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("✨", fontSize = 24.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "정답한 카드는 다음 단계로, 틀린 카드는 1단계로 이동했습니다.\n(체험 모드에서는 실제 저장되지 않습니다)",
+                        "정답한 카드는 다음 단계로, 틀린 카드는 1단계로 이동했습니다.",
                         fontSize = 14.sp,
                         color = TextGray,
+                        textAlign = TextAlign.Center,
                         lineHeight = 20.sp
                     )
                 }

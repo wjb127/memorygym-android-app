@@ -53,6 +53,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.memorygym.app.presentation.navigation.Screen
 import com.memorygym.app.presentation.theme.*
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -282,10 +284,11 @@ fun QuizTypeCard(
     icon: String,
     title: String,
     isSelected: Boolean,
+    onClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { },
+        onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -392,30 +395,6 @@ fun MemoryTabContent(viewModel: HomeViewModel, navController: NavController, uiS
             color = TextGray
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(LightSkyBlue)
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Lightbulb,
-                contentDescription = "체험 모드",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "체험 모드: 샘플 과목으로 학습을 체험해보세요! (수정/삭제 불가)",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Box {
@@ -515,6 +494,7 @@ fun QuizTabContent(navController: NavController, viewModel: HomeViewModel) {
     var answer by remember { mutableStateOf("") }
     val subjects by viewModel.subjects.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = Modifier
@@ -566,9 +546,12 @@ fun QuizTabContent(navController: NavController, viewModel: HomeViewModel) {
                                     modifier = Modifier.weight(1f)
                                 )
                                 QuizTypeCard(
-                                    icon = "📚",
-                                    title = "대량 퀴즈",
+                                    icon = "💰",
+                                    title = "퀴즈 구매",
                                     isSelected = false,
+                                    onClick = {
+                                        Toast.makeText(context, "아직 구현중입니다", Toast.LENGTH_SHORT).show()
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -596,31 +579,6 @@ fun QuizTabContent(navController: NavController, viewModel: HomeViewModel) {
                             contentDescription = "새로고침",
                             tint = TextGray,
                             modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // 체험 모드 안내
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(LightSkyBlue)
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Lightbulb,
-                            contentDescription = "체험 모드",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "체험 모드: 샘플 과목으로 학습을 체험해보세요! (수정/삭제 불가)",
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     
@@ -889,29 +847,6 @@ fun QuizTabContent(navController: NavController, viewModel: HomeViewModel) {
                         color = TextGray,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    
-                    // 체험 모드 안내
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(LightSkyBlue)
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Lightbulb,
-                            contentDescription = "체험 모드",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "체험 모드: 샘플 과목으로 학습을 체험해보세요! (수정/삭제 불가)",
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
@@ -1453,13 +1388,48 @@ fun SubjectTabContent(navController: NavController, viewModel: HomeViewModel) {
         // 과목 관리 섹션 헤더
         item {
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "과목 관리",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextGray,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "과목 관리",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextGray
+                )
+                
+                // 중급 영단어가 없는 경우에만 표시
+                val hasIntermediateEnglish = subjects.any { it.name == "중급 영단어" }
+                if (!hasIntermediateEnglish) {
+                    Button(
+                        onClick = { viewModel.createInitialDataForCurrentUser() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        enabled = !uiState.isLoading
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("생성 중...", color = Color.White, fontSize = 12.sp)
+                            } else {
+                                Text("🎁", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("중급 영단어 받기", color = Color.White, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
+            }
         }
         
         // 과목 목록 또는 빈 상태
@@ -1542,18 +1512,7 @@ fun SubjectManagementCard(
                         fontWeight = FontWeight.Bold,
                         color = TextGray
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Card(
-                        shape = RoundedCornerShape(4.dp),
-                        colors = CardDefaults.cardColors(containerColor = AccentPink.copy(alpha = 0.1f))
-                    ) {
-                        Text(
-                            text = "샘플",
-                            fontSize = 12.sp,
-                            color = AccentPink,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1666,29 +1625,6 @@ fun QuizManageTabContent(
                 color = TextGray,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
-            // 체험 모드 안내
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(LightSkyBlue)
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Lightbulb,
-                    contentDescription = "체험 모드",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "체험 모드: 샘플 과목으로 학습을 체험해보세요! (수정/삭제 불가)",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
             
             Spacer(modifier = Modifier.height(16.dp))
             
