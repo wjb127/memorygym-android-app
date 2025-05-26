@@ -89,11 +89,15 @@ class TrainingStudyViewModel @Inject constructor(
         // 정답 체크 (대소문자 무시, 공백 제거)
         val isCorrect = userAnswer.lowercase().trim() == currentCard.back.lowercase().trim()
         
+        println("DEBUG: checkAnswer called - userAnswer: '$userAnswer', correct: $isCorrect")
+        
         _uiState.value = _uiState.value.copy(
             answerState = if (isCorrect) AnswerState.CORRECT else AnswerState.INCORRECT,
             correctCount = if (isCorrect) _uiState.value.correctCount + 1 else _uiState.value.correctCount,
             incorrectCount = if (!isCorrect) _uiState.value.incorrectCount + 1 else _uiState.value.incorrectCount
         )
+        
+        println("DEBUG: answerState updated to ${if (isCorrect) "CORRECT" else "INCORRECT"}")
         
         // 카드 박스 업데이트
         updateCardBox(currentCard, isCorrect)
@@ -119,22 +123,30 @@ class TrainingStudyViewModel @Inject constructor(
     }
 
     fun nextCard() {
+        println("DEBUG: nextCard called")
         currentCardIndex++
         
         if (currentCardIndex >= allCards.size) {
             // 모든 카드 완료
+            println("DEBUG: All cards completed")
             _uiState.value = _uiState.value.copy(
                 isCompleted = true
             )
         } else {
-            // 다음 카드로 이동
+            // 다음 카드로 이동 (answerState는 UI에서 별도 관리하므로 여기서는 변경하지 않음)
+            println("DEBUG: Moving to next card (${currentCardIndex + 1}/${allCards.size})")
             _uiState.value = _uiState.value.copy(
                 currentCard = allCards[currentCardIndex],
                 currentIndex = currentCardIndex + 1,
-                answerState = AnswerState.WAITING,
                 remainingCards = allCards.drop(currentCardIndex + 1)
             )
         }
+    }
+
+    fun resetAnswerState() {
+        println("DEBUG: resetAnswerState 호출됨 - 현재 answerState: ${_uiState.value.answerState}")
+        _uiState.value = _uiState.value.copy(answerState = AnswerState.WAITING)
+        println("DEBUG: resetAnswerState 완료 - 새로운 answerState: ${_uiState.value.answerState}")
     }
 
     fun resetAnswer() {

@@ -39,23 +39,33 @@ fun TrainingStudyScreen(
     val uiState by viewModel.uiState.collectAsState()
     var userAnswer by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    var autoNextTimer by remember { mutableStateOf(5) }
+    
+    // UI 전용 상태 관리 (ViewModel의 answerState와 분리)
+    var uiAnswerState by remember { mutableStateOf(AnswerState.WAITING) }
 
     LaunchedEffect(subjectId, trainingLevel) {
         viewModel.loadCardsForTraining(subjectId, trainingLevel)
     }
 
-    // 정답 확인 후 5초 타이머
+    // ViewModel의 answerState 변경 감지하여 UI 상태 업데이트
     LaunchedEffect(uiState.answerState) {
-        if (uiState.answerState == AnswerState.CORRECT || uiState.answerState == AnswerState.INCORRECT) {
-            autoNextTimer = 5
-            while (autoNextTimer > 0) {
-                kotlinx.coroutines.delay(1000)
-                autoNextTimer--
+        println("DEBUG: ViewModel answerState 변경 감지 - ${uiState.answerState}")
+        when (uiState.answerState) {
+            AnswerState.CORRECT, AnswerState.INCORRECT -> {
+                // 정답/오답 상태를 UI에 반영 (WAITING으로 자동 변경하지 않음)
+                uiAnswerState = uiState.answerState
+                println("DEBUG: UI answerState 업데이트 - $uiAnswerState")
+                println("DEBUG: 정답/오답 확인 완료 - 버튼 활성화")
             }
-            // 5초 후 자동으로 다음 카드로 이동
-            userAnswer = ""
-            viewModel.nextCard()
+            AnswerState.WAITING -> {
+                // ViewModel이 WAITING이 되어도 UI는 정답/오답 상태를 유지
+                // 사용자가 버튼을 눌렀을 때만 UI를 WAITING으로 변경
+                if (uiAnswerState == AnswerState.WAITING) {
+                    println("DEBUG: 초기 WAITING 상태 동기화")
+                } else {
+                    println("DEBUG: ViewModel WAITING 변경 무시 - UI 상태 유지: $uiAnswerState")
+                }
+            }
         }
     }
 
@@ -163,7 +173,7 @@ fun TrainingStudyScreen(
                             .weight(1f),
                         shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = when (uiState.answerState) {
+                            containerColor = when (uiAnswerState) {
                                 AnswerState.CORRECT -> Color(0xFFE8F5E8)
                                 AnswerState.INCORRECT -> Color(0xFFFFE8E8)
                                 else -> Color.White
@@ -172,7 +182,7 @@ fun TrainingStudyScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                         border = BorderStroke(
                             width = 3.dp,
-                            color = when (uiState.answerState) {
+                            color = when (uiAnswerState) {
                                 AnswerState.CORRECT -> Color(0xFF4CAF50)
                                 AnswerState.INCORRECT -> Color(0xFFFF5252)
                                 else -> Color.Transparent
@@ -229,7 +239,7 @@ fun TrainingStudyScreen(
                             Spacer(modifier = Modifier.height(32.dp))
                             
                             // 정답 입력 또는 결과 표시
-                            when (uiState.answerState) {
+                            when (uiAnswerState) {
                                 AnswerState.WAITING -> {
                                     OutlinedTextField(
                                         value = userAnswer,
@@ -344,12 +354,13 @@ fun TrainingStudyScreen(
                             Spacer(modifier = Modifier.height(32.dp))
                             
                             // 액션 버튼
-                            when (uiState.answerState) {
+                            when (uiAnswerState) {
                                 AnswerState.WAITING -> {
                                     Button(
                                         onClick = {
                                             keyboardController?.hide()
                                             // 빈 답안도 허용 (모르는 경우 바로 오답 처리)
+                                            println("DEBUG: 정답 확인 버튼 클릭")
                                             viewModel.checkAnswer(userAnswer.trim())
                                         },
                                         modifier = Modifier.fillMaxWidth(),
@@ -365,14 +376,27 @@ fun TrainingStudyScreen(
                                         }
                                     }
                                 }
+                                // 정답 또는 오답 상태일 때 표시되는 "다음으로 넘어가기" 버튼
                                 AnswerState.CORRECT, AnswerState.INCORRECT -> {
+                                    println("DEBUG: Rendering next button - 정답/오답 상태")
+                                    
                                     Button(
                                         onClick = {
+                                            println("DEBUG: 다음으로 넘어가기 버튼 클릭")
+                                            // 입력 필드 초기화
                                             userAnswer = ""
+                                            // ViewModel의 nextCard() 호출하여 다음 문제로 이동
                                             viewModel.nextCard()
+                                            // UI 상태를 WAITING으로 변경 (ViewModel의 answerState는 건드리지 않음)
+                                            uiAnswerState = AnswerState.WAITING
                                         },
+                                        // 버튼 항상 활성화
+                                        enabled = true,
                                         modifier = Modifier.fillMaxWidth(),
-                                        colors = ButtonDefaults.buttonColors(containerColor = AccentPink),
+                                        // 항상 핑크색으로 활성화
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = AccentPink
+                                        ),
                                         shape = RoundedCornerShape(12.dp)
                                     ) {
                                         Row(
@@ -382,8 +406,14 @@ fun TrainingStudyScreen(
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = if (uiState.currentIndex < uiState.totalCards) {
-                                                    if (autoNextTimer > 0) "다음으로 넘어가기 (${autoNextTimer}초)" else "다음으로 넘어가기"
-                                                } else "학습 완료",
+                                                    // 다음 문제가 있을 때
+                                                    println("DEBUG: 버튼 텍스트 - 다음으로 넘어가기")
+                                                    "다음으로 넘어가기"
+                                                } else {
+                                                    // 마지막 문제일 때
+                                                    println("DEBUG: 버튼 텍스트 - 학습 완료")
+                                                    "학습 완료"
+                                                },
                                                 color = Color.White,
                                                 fontSize = 16.sp
                                             )
