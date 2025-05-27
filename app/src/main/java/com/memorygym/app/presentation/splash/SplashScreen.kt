@@ -12,31 +12,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.memorygym.app.ads.AdManager
+import com.memorygym.app.presentation.MainActivity
 import com.memorygym.app.presentation.navigation.Screen
 import com.memorygym.app.presentation.theme.*
 import kotlinx.coroutines.delay
+import javax.inject.Inject
 
 @Composable
 fun SplashScreen(
     navController: NavController,
-    viewModel: SplashViewModel = hiltViewModel()
+    viewModel: SplashViewModel = hiltViewModel(),
+    adManager: AdManager
 ) {
     val isUserSignedIn by viewModel.isUserSignedIn.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         delay(2000) // 2초 대기
-        if (isUserSignedIn) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
+        
+        // 스플래시 완료 후 광고 표시
+        val activity = context as? MainActivity
+        if (activity != null) {
+            adManager.showInterstitialAd(activity) {
+                // 광고가 닫힌 후 다음 화면으로 이동
+                if (isUserSignedIn) {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                } else {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
             }
         } else {
-            navController.navigate(Screen.Login.route) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
+            // 광고를 표시할 수 없는 경우 바로 다음 화면으로 이동
+            if (isUserSignedIn) {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
+            } else {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
             }
         }
     }
