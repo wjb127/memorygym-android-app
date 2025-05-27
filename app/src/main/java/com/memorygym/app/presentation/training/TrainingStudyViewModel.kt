@@ -27,7 +27,8 @@ data class TrainingStudyUiState(
     val errorMessage: String? = null,
     val remainingCards: List<Flashcard> = emptyList(),
     val correctCount: Int = 0,
-    val incorrectCount: Int = 0
+    val incorrectCount: Int = 0,
+    val allCards: List<Flashcard> = emptyList() // UI에서 사용할 전체 카드 리스트
 )
 
 @HiltViewModel
@@ -49,12 +50,19 @@ class TrainingStudyViewModel @Inject constructor(
                 val userId = repository.getCurrentUserId() ?: return@launch
                 
                 repository.getFlashcardsBySubject(userId, subjectId).collect { flashcards ->
-                    // 해당 훈련소 레벨의 카드들만 필터링
+                    // 해당 훈련소 레벨의 카드들만 필터링 (순서 그대로)
                     val levelCards = flashcards.filter { it.boxNumber == trainingLevel }
                     
+                    println("DEBUG: loadCardsForTraining - 전체 카드: ${flashcards.size}, 레벨 $trainingLevel 카드: ${levelCards.size}")
+                    levelCards.forEachIndexed { index, card ->
+                        println("DEBUG: 카드 $index: ${card.front} -> ${card.back}")
+                    }
+                    
                     if (levelCards.isNotEmpty()) {
-                        allCards = levelCards.shuffled() // 카드 순서 섞기
+                        allCards = levelCards // 카드 순서 섞지 않음
                         currentCardIndex = 0
+                        
+                        println("DEBUG: 첫 번째 카드 설정: ${allCards[0].front}")
                         
                         _uiState.value = _uiState.value.copy(
                             currentCard = allCards[0],
@@ -62,7 +70,8 @@ class TrainingStudyViewModel @Inject constructor(
                             totalCards = allCards.size,
                             answerState = AnswerState.WAITING,
                             isLoading = false,
-                            remainingCards = allCards.drop(1)
+                            remainingCards = allCards.drop(1),
+                            allCards = allCards // UI에서 사용할 전체 카드 리스트 제공
                         )
                     } else {
                         _uiState.value = _uiState.value.copy(
@@ -123,8 +132,11 @@ class TrainingStudyViewModel @Inject constructor(
     }
 
     fun nextCard() {
-        println("DEBUG: nextCard called")
+        println("DEBUG: nextCard called - 현재 currentCardIndex: $currentCardIndex, allCards.size: ${allCards.size}")
+        println("DEBUG: nextCard called - 현재 카드: ${_uiState.value.currentCard?.front}")
+        
         currentCardIndex++
+        println("DEBUG: currentCardIndex 증가 후: $currentCardIndex")
         
         if (currentCardIndex >= allCards.size) {
             // 모든 카드 완료
@@ -134,12 +146,17 @@ class TrainingStudyViewModel @Inject constructor(
             )
         } else {
             // 다음 카드로 이동 (answerState는 UI에서 별도 관리하므로 여기서는 변경하지 않음)
+            val nextCard = allCards[currentCardIndex]
             println("DEBUG: Moving to next card (${currentCardIndex + 1}/${allCards.size})")
+            println("DEBUG: 다음 카드: ${nextCard.front}")
+            
             _uiState.value = _uiState.value.copy(
-                currentCard = allCards[currentCardIndex],
-                currentIndex = currentCardIndex + 1,
+                currentCard = nextCard,
+                currentIndex = currentCardIndex + 1, // UI 표시용 인덱스 업데이트
                 remainingCards = allCards.drop(currentCardIndex + 1)
             )
+            
+            println("DEBUG: UI 상태 업데이트 완료 - currentCard: ${_uiState.value.currentCard?.front}, currentIndex: ${_uiState.value.currentIndex}")
         }
     }
 
@@ -151,5 +168,19 @@ class TrainingStudyViewModel @Inject constructor(
 
     fun resetAnswer() {
         _uiState.value = _uiState.value.copy(answerState = AnswerState.WAITING)
+    }
+
+    // UI에서 직접 정답 체크를 하므로 카드 박스 업데이트만 수행
+    fun updateCardBoxOnly(card: Flashcard, isCorrect: Boolean) {
+        println("DEBUG: updateCardBoxOnly called - card: ${card.front}, correct: $isCorrect")
+        
+        // 정답/오답 카운트 업데이트
+        _uiState.value = _uiState.value.copy(
+            correctCount = if (isCorrect) _uiState.value.correctCount + 1 else _uiState.value.correctCount,
+            incorrectCount = if (!isCorrect) _uiState.value.incorrectCount + 1 else _uiState.value.incorrectCount
+        )
+        
+        // 카드 박스 업데이트
+        updateCardBox(card, isCorrect)
     }
 } 
