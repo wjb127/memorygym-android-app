@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import com.memorygym.app.ads.AdManager
 import com.memorygym.app.presentation.auth.LoginScreen
 import com.memorygym.app.presentation.feedback.FeedbackScreen
 import com.memorygym.app.presentation.flashcard.FlashcardListScreen
@@ -20,13 +21,19 @@ import com.memorygym.app.presentation.training.TrainingStudyScreen
 import com.memorygym.app.presentation.training.TrainingResultScreen
 
 @Composable
-fun MemoryGymNavigation(navController: NavHostController) {
+fun MemoryGymNavigation(
+    navController: NavHostController,
+    adManager: AdManager
+) {
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
         composable(Screen.Splash.route) {
-            SplashScreen(navController = navController)
+            SplashScreen(
+                navController = navController,
+                adManager = adManager
+            )
         }
         
         composable(Screen.Login.route) {
