@@ -98,6 +98,9 @@ dependencies {
     // Google Play Services
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     
+    // AdMob
+    implementation("com.google.android.gms:play-services-ads:22.6.0")
+    
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
