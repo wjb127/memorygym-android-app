@@ -13,12 +13,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.memorygym.app.ads.AdManager
 import com.memorygym.app.presentation.navigation.MemoryGymNavigation
 import com.memorygym.app.presentation.theme.MemoryGymTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var adManager: AdManager
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,7 +35,10 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    MemoryGymNavigation(navController = navController)
+                    MemoryGymNavigation(
+                        navController = navController,
+                        adManager = adManager
+                    )
                 }
             }
         }
