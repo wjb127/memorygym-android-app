@@ -10,6 +10,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.memorygym.app.BuildConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +22,8 @@ class AdManager @Inject constructor() {
     
     companion object {
         private const val TAG = "AdManager"
-        // 테스트용 전면광고 ID (실제 배포 시에는 실제 광고 ID로 변경해야 함)
-        private const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+        // BuildConfig에서 광고 단위 ID 가져오기 (보안)
+        private val INTERSTITIAL_AD_UNIT_ID = BuildConfig.ADMOB_INTERSTITIAL_ID
     }
     
     fun initialize(context: Context) {
