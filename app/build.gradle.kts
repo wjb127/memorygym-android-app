@@ -40,13 +40,34 @@ android {
         manifestPlaceholders["admobAppId"] = localProperties.getProperty("ADMOB_APP_ID") ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
+    signingConfigs {
+        create("release") {
+            val localProperties = Properties()
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                localProperties.load(localPropertiesFile.inputStream())
+            }
+            
+            keyAlias = localProperties.getProperty("KEY_ALIAS") ?: "memorygym"
+            keyPassword = localProperties.getProperty("KEY_PASSWORD") ?: "memorygym123"
+            storeFile = rootProject.file(localProperties.getProperty("KEYSTORE_FILE") ?: "memorygym-release-key.keystore")
+            storePassword = localProperties.getProperty("KEYSTORE_PASSWORD") ?: "memorygym123"
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
         }
     }
     
