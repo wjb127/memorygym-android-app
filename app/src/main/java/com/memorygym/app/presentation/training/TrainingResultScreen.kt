@@ -3,7 +3,9 @@ package com.memorygym.app.presentation.training
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Lightbulb
@@ -47,10 +49,13 @@ fun TrainingResultScreen(
             )
         }
     ) { paddingValues ->
+        val scrollState = rememberScrollState()
+        
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -217,12 +222,12 @@ fun TrainingResultScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
             
             // 액션 버튼들
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // 다시 도전하기
                 Button(
@@ -235,21 +240,24 @@ fun TrainingResultScreen(
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = AccentPink),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text("🔄", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("🔥", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             "다시 도전하기",
                             color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -262,21 +270,26 @@ fun TrainingResultScreen(
                             inclusive = false
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, ButtonGray),
-                    contentPadding = PaddingValues(vertical = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(2.dp, AccentPink),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = AccentPink
+                    )
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text("🔄", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("📚", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             "다른 세트 선택하기",
-                            color = TextGray,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            color = AccentPink,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }

@@ -81,6 +81,60 @@ class FirestoreRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteUserData(userId: String): Result<Unit> {
+        return try {
+            // 1. 사용자의 모든 플래시카드 삭제
+            val flashcards = firestore.collection(FLASHCARDS_COLLECTION)
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+            
+            flashcards.documents.forEach { doc ->
+                doc.reference.delete().await()
+            }
+            
+            // 2. 사용자의 모든 주제 삭제
+            val subjects = firestore.collection(SUBJECTS_COLLECTION)
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+            
+            subjects.documents.forEach { doc ->
+                doc.reference.delete().await()
+            }
+            
+            // 3. 사용자의 모든 학습 세션 삭제
+            val studySessions = firestore.collection(STUDY_SESSIONS_COLLECTION)
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+            
+            studySessions.documents.forEach { doc ->
+                doc.reference.delete().await()
+            }
+            
+            // 4. 사용자의 모든 피드백 삭제
+            val feedbacks = firestore.collection(FEEDBACK_COLLECTION)
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+            
+            feedbacks.documents.forEach { doc ->
+                doc.reference.delete().await()
+            }
+            
+            // 5. 마지막으로 사용자 프로필 삭제
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .delete()
+                .await()
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // Subject operations
     override suspend fun createSubject(subject: Subject): Result<String> {
         return try {

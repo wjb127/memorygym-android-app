@@ -53,16 +53,17 @@ class TrainingStudyViewModel @Inject constructor(
                     // 해당 훈련소 레벨의 카드들만 필터링 (순서 그대로)
                     val levelCards = flashcards.filter { it.boxNumber == trainingLevel }
                     
-                    println("DEBUG: loadCardsForTraining - 전체 카드: ${flashcards.size}, 레벨 $trainingLevel 카드: ${levelCards.size}")
-                    levelCards.forEachIndexed { index, card ->
-                        println("DEBUG: 카드 $index: ${card.front} -> ${card.back}")
+                    // 카드가 처음 로드될 때만 로그 출력
+                    if (allCards.isEmpty() && levelCards.isNotEmpty()) {
+                        println("DEBUG: 카드 로드 완료 - 레벨 $trainingLevel: ${levelCards.size}개")
+                        levelCards.forEachIndexed { index, card ->
+                            println("DEBUG: 카드 $index: ${card.front} -> ${card.back}")
+                        }
                     }
                     
                     if (levelCards.isNotEmpty()) {
                         allCards = levelCards // 카드 순서 섞지 않음
                         currentCardIndex = 0
-                        
-                        println("DEBUG: 첫 번째 카드 설정: ${allCards[0].front}")
                         
                         _uiState.value = _uiState.value.copy(
                             currentCard = allCards[0],

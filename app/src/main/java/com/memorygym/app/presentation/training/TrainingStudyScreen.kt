@@ -62,47 +62,23 @@ fun TrainingStudyScreen(
             // 첫 번째 로드일 때만 카드 배열 설정
             uiCards = uiState.allCards
             println("DEBUG: UI 카드 배열 초기화 - ${uiCards.size}개 카드 로드")
-            uiCards.forEachIndexed { index, card ->
-                println("DEBUG: UI 카드 $index: ${card.front} -> ${card.back}")
-            }
         }
     }
 
-    // ViewModel의 answerState 변경 감지하여 UI 상태 업데이트
-    LaunchedEffect(uiState.answerState) {
-        println("DEBUG: ViewModel answerState 변경 감지 - ${uiState.answerState}")
-        when (uiState.answerState) {
-            AnswerState.CORRECT, AnswerState.INCORRECT -> {
-                // 정답/오답 상태를 UI에 반영 (WAITING으로 자동 변경하지 않음)
-                uiAnswerState = uiState.answerState
-                // 현재 카드 정보를 정답/오답 표시용으로 저장
-                answerDisplayCard = uiState.currentCard
-                // UI 답변 횟수 증가
-                uiAnsweredCount++
-                println("DEBUG: UI answerState 업데이트 - $uiAnswerState")
-                println("DEBUG: UI answeredCount 증가 - $uiAnsweredCount")
-                println("DEBUG: 정답/오답 확인 완료 - 버튼 활성화")
-                println("DEBUG: 정답/오답 표시용 카드 저장 - ${answerDisplayCard?.front}")
-            }
-            AnswerState.WAITING -> {
-                // ViewModel이 WAITING이 되어도 UI는 정답/오답 상태를 유지
-                // 사용자가 버튼을 눌렀을 때만 UI를 WAITING으로 변경
-                if (uiAnswerState == AnswerState.WAITING) {
-                    println("DEBUG: 초기 WAITING 상태 동기화")
-                    answerDisplayCard = null
-                } else {
-                    println("DEBUG: ViewModel WAITING 변경 무시 - UI 상태 유지: $uiAnswerState")
-                }
-            }
-        }
-    }
+    // ViewModel의 answerState 변경 감지는 더 이상 사용하지 않음 (UI에서 직접 관리)
+    // LaunchedEffect는 제거하고 UI에서만 상태 관리
 
     // 현재 표시할 카드 계산 (uiAnsweredCount 기준)
     val currentDisplayCard = remember(uiAnsweredCount, uiCards) {
         if (uiCards.isNotEmpty() && uiAnsweredCount <= uiCards.size) {
             val cardIndex = uiAnsweredCount - 1 // 1-based를 0-based로 변환
-            println("DEBUG: 현재 표시 카드 계산 - uiAnsweredCount: $uiAnsweredCount, cardIndex: $cardIndex")
-            uiCards[cardIndex]
+            if (cardIndex >= 0 && cardIndex < uiCards.size) {
+                val card = uiCards[cardIndex]
+                println("DEBUG: [WAITING] 현재 문제 - ${card.front} (${uiAnsweredCount}/${uiCards.size})")
+                card
+            } else {
+                null
+            }
         } else {
             null
         }
@@ -111,7 +87,7 @@ fun TrainingStudyScreen(
     // UI 카운터 기반 훈련 완료 체크
     LaunchedEffect(uiAnsweredCount, uiCards.size) {
         if (uiAnsweredCount > uiCards.size && uiCards.isNotEmpty()) {
-            println("DEBUG: UI 카운터 기반 훈련 완료 - $uiAnsweredCount > ${uiCards.size}")
+            println("DEBUG: [훈련완료] 모든 문제 완료 - $uiAnsweredCount > ${uiCards.size}")
             navController.navigate(
                 Screen.TrainingResult.createRoute(
                     subjectId = subjectId,
@@ -183,10 +159,6 @@ fun TrainingStudyScreen(
                         color = TextGray,
                         modifier = Modifier.padding(end = 16.dp)
                     )
-                    // 디버깅용 로그
-                    LaunchedEffect(uiAnsweredCount) {
-                        println("DEBUG: UI answeredCount 표시 변경됨 - $uiAnsweredCount / ${uiState.totalCards}")
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
@@ -292,8 +264,14 @@ fun TrainingStudyScreen(
                             ) {
                                 Text(
                                     text = when (uiAnswerState) {
-                                        AnswerState.WAITING -> currentDisplayCard?.front ?: ""
-                                        AnswerState.CORRECT, AnswerState.INCORRECT -> answerDisplayCard?.front ?: ""
+                                        AnswerState.WAITING -> {
+                                            // WAITING 상태에서는 현재 표시할 카드 사용
+                                            currentDisplayCard?.front ?: ""
+                                        }
+                                        AnswerState.CORRECT, AnswerState.INCORRECT -> {
+                                            // 정답/오답 상태에서는 정답 확인 시점의 카드 사용
+                                            answerDisplayCard?.front ?: ""
+                                        }
                                     },
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
@@ -332,7 +310,24 @@ fun TrainingStudyScreen(
                                         keyboardActions = KeyboardActions(
                                             onDone = {
                                                 keyboardController?.hide()
-                                                viewModel.checkAnswer(userAnswer.trim())
+                                                // UI에서 직접 정답 체크 (ViewModel 호출하지 않음)
+                                                val currentQuestionIndex = uiAnsweredCount - 1
+                                                if (uiCards.isNotEmpty() && currentQuestionIndex >= 0 && currentQuestionIndex < uiCards.size) {
+                                                    val questionCard = uiCards[currentQuestionIndex]
+                                                    val isCorrect = userAnswer.lowercase().trim() == questionCard.back.lowercase().trim()
+                                                    
+                                                    println("DEBUG: [키보드 정답확인] ${questionCard.front} -> 입력: '$userAnswer' / 정답: '${questionCard.back}' / 결과: ${if (isCorrect) "정답" else "오답"}")
+                                                    
+                                                    // 먼저 정답/오답 표시용 카드 설정
+                                                    answerDisplayCard = questionCard
+                                                    
+                                                    // UI 상태 업데이트
+                                                    uiAnswerState = if (isCorrect) AnswerState.CORRECT else AnswerState.INCORRECT
+                                                    uiAnsweredCount++
+                                                    
+                                                    // ViewModel에는 카드 박스 업데이트만 요청
+                                                    viewModel.updateCardBoxOnly(questionCard, isCorrect)
+                                                }
                                             }
                                         ),
                                         singleLine = true
@@ -392,20 +387,26 @@ fun TrainingStudyScreen(
                                             onClick = {
                                                 keyboardController?.hide()
                                                 // 빈 답안도 허용 (모르는 경우 바로 오답 처리)
-                                                println("DEBUG: 정답 확인 버튼 클릭 - 현재 카드: ${currentDisplayCard?.front}")
+                                                
+                                                // 현재 문제의 인덱스 계산 (정답 확인 시점 기준)
+                                                val currentQuestionIndex = uiAnsweredCount - 1
                                                 
                                                 // UI에서 직접 정답 체크
-                                                if (currentDisplayCard != null) {
-                                                    val isCorrect = userAnswer.lowercase().trim() == currentDisplayCard.back.lowercase().trim()
-                                                    println("DEBUG: UI 정답 체크 - userAnswer: '$userAnswer', correct: $isCorrect")
+                                                if (uiCards.isNotEmpty() && currentQuestionIndex >= 0 && currentQuestionIndex < uiCards.size) {
+                                                    val questionCard = uiCards[currentQuestionIndex]
+                                                    val isCorrect = userAnswer.lowercase().trim() == questionCard.back.lowercase().trim()
                                                     
-                                                    // UI 상태 업데이트
+                                                    // 먼저 정답/오답 표시용 카드 설정 (uiAnsweredCount 증가 전에!)
+                                                    answerDisplayCard = questionCard
+                                                    
+                                                    // 그 다음 UI 상태 업데이트
                                                     uiAnswerState = if (isCorrect) AnswerState.CORRECT else AnswerState.INCORRECT
-                                                    answerDisplayCard = currentDisplayCard
                                                     uiAnsweredCount++
                                                     
+                                                    println("DEBUG: [정답확인] ${questionCard.front} -> 입력: '$userAnswer' / 정답: '${questionCard.back}' / 결과: ${if (isCorrect) "정답" else "오답"}")
+                                                    
                                                     // ViewModel에는 카드 박스 업데이트만 요청
-                                                    viewModel.updateCardBoxOnly(currentDisplayCard, isCorrect)
+                                                    viewModel.updateCardBoxOnly(questionCard, isCorrect)
                                                 }
                                             },
                                             modifier = Modifier.fillMaxSize(),
@@ -424,11 +425,9 @@ fun TrainingStudyScreen(
                                     }
                                     // 정답 또는 오답 상태일 때 표시되는 "다음으로 넘어가기" 버튼
                                     AnswerState.CORRECT, AnswerState.INCORRECT -> {
-                                        println("DEBUG: Rendering next button - 정답/오답 상태")
                                         
                                         Button(
                                             onClick = {
-                                                println("DEBUG: 다음으로 넘어가기 버튼 클릭 - 현재 uiAnsweredCount: $uiAnsweredCount")
                                                 // 입력 필드 초기화
                                                 userAnswer = ""
                                                 // UI 상태를 WAITING으로 변경
@@ -436,7 +435,6 @@ fun TrainingStudyScreen(
                                                 // 정답/오답 표시용 카드 정보 초기화
                                                 answerDisplayCard = null
                                                 // uiAnsweredCount는 이미 정답 확인 시 증가했으므로 여기서는 건드리지 않음
-                                                println("DEBUG: 다음 카드로 이동 완료 - 다음 uiAnsweredCount: $uiAnsweredCount")
                                             },
                                             modifier = Modifier.fillMaxSize(),
                                             colors = ButtonDefaults.buttonColors(containerColor = AccentPink),
@@ -451,11 +449,9 @@ fun TrainingStudyScreen(
                                                 Text(
                                                     text = if (uiAnsweredCount < uiCards.size) {
                                                         // 다음 문제가 있을 때
-                                                        println("DEBUG: 버튼 텍스트 - 다음으로 넘어가기 ($uiAnsweredCount/${uiCards.size})")
                                                         "다음으로 넘어가기"
                                                     } else {
                                                         // 마지막 문제일 때
-                                                        println("DEBUG: 버튼 텍스트 - 학습 완료 ($uiAnsweredCount/${uiCards.size})")
                                                         "학습 완료"
                                                     },
                                                     color = Color.White,

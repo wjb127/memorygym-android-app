@@ -97,4 +97,27 @@ class AuthRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun deleteAccount(): Result<Unit> {
+        return try {
+            val currentUser = firebaseAuth.currentUser
+                ?: return Result.failure(Exception("로그인된 사용자가 없습니다."))
+            
+            val userId = currentUser.uid
+            
+            // 1. Firestore에서 사용자 데이터 삭제
+            firestoreRepository.deleteUserData(userId).getOrThrow()
+            
+            // 2. Firebase Auth에서 계정 삭제
+            currentUser.delete().await()
+            
+            // 3. 계정 삭제 후 자동 로그아웃 (이미 계정이 삭제되었으므로 signOut 호출)
+            // Firebase Auth에서 계정이 삭제되면 자동으로 로그아웃되지만, 명시적으로 호출
+            firebaseAuth.signOut()
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 } 

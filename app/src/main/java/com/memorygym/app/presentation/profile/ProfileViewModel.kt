@@ -16,7 +16,8 @@ import javax.inject.Inject
 data class ProfileUiState(
     val user: User? = null,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isAccountDeleted: Boolean = false
 )
 
 @HiltViewModel
@@ -107,5 +108,40 @@ class ProfileViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    fun deleteAccount(onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            
+            try {
+                val result = authRepository.deleteAccount()
+                result.fold(
+                    onSuccess = {
+                        authRepository.signOut()
+                        
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            isAccountDeleted = true,
+                            errorMessage = null
+                        )
+                        
+                        // 성공 콜백 호출
+                        onSuccess()
+                    },
+                    onFailure = { error ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            errorMessage = "계정 삭제 실패: ${error.message}"
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "계정 삭제 실패: ${e.message}"
+                )
+            }
+        }
     }
 } 

@@ -66,7 +66,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
         debug {
-            applicationIdSuffix = ".debug"
+            // applicationIdSuffix = ".debug"  // Firebase 호환성을 위해 주석 처리
             versionNameSuffix = "-debug"
         }
     }
